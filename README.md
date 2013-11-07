@@ -1,6 +1,7 @@
 pyshotx
 =======
 Requirements:
+---------------------
     selenium installed
     chromedriver installed in $PATH
     python selenium installed (pip install selenium)
