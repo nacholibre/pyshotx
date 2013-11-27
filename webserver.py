@@ -21,7 +21,7 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey, sw):
             domainHash = hashlib.md5(domain + secretWord).hexdigest()
             image = Image.open(screenshotPath)
             image.thumbnail((227, 128), Image.ANTIALIAS)
-            image.save('%s_thumbnail' % domainHash, 'PNG')
+            image.save('%s_thumbnail.png' % domainHash, 'PNG')
             os.remove(screenshotPath)
 
 
