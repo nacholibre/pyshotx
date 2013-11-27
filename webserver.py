@@ -5,6 +5,7 @@ import redis
 import multiprocessing
 import hashlib
 import Image
+import os
 
 
 def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey, sw):
@@ -21,6 +22,7 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey, sw):
             image = Image.open(screenshotPath)
             image.thumbnail((227, 128), Image.ANTIALIAS)
             image.save('%s_thumbnail' % domainHash, 'PNG')
+            os.remove(screenshotPath)
 
 
 def server(env, start_response):
