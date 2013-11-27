@@ -4,3 +4,4 @@ Requirements:
 ---------------------
     gevent
     phantomjs
+    redis
