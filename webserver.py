@@ -6,11 +6,15 @@ import multiprocessing
 import hashlib
 import Image
 import os
+import sys
 
 
-def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey, sw):
+def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
+                 sw, parentPid):
     secretWord = sw
     while True:
+        if not os.path.exists("/proc/%s" % parentPid):
+            sys.exit()
         screenshotPath = redisConnection.spop(resizeQueueKey)
         if screenshotPath is None:
             time.sleep(1)
@@ -50,6 +54,7 @@ def server(env, start_response):
 
 
 if __name__ == '__main__':
+    parentPid = os.getpid()
     GET_DOMAIN_URL = '/getDomain'
     RESIZE_URL = '/resize'
 
@@ -63,7 +68,8 @@ if __name__ == '__main__':
                                             args=(redisConnection,
                                                   screenshotsQueueKey,
                                                   resizeQueueKey,
-                                                  secretWord))
+                                                  secretWord,
+                                                  parentPid))
     resizeProcess.start()
 
     wsgi.WSGIServer(('', 8088), server).serve_forever()
