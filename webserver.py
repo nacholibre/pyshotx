@@ -9,6 +9,25 @@ import os
 import sys
 
 
+class Screenshot(object):
+    def __init__(self, image):
+        self.image = image
+
+    def saveThumbnail(self, thumbWidth, thumbHeight, filename, quality=100):
+        self.image.thumbnail((thumbWidth, thumbHeight), Image.ANTIALIAS)
+        self.image.save(filename, 'JPEG', quality=80)
+
+    def save(self, filename, quality=100):
+        self.image.save(filename, 'JPEG', quality=quality)
+
+
+class ProcessScreenshot(object):
+    @staticmethod
+    def open(screenshotPath):
+        screenshot = Image.open(screenshotPath)
+        return Screenshot(screenshot)
+
+
 def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
                  sw, parentPid):
     secretWord = sw
@@ -21,11 +40,20 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
         else:
             split = screenshotPath.split('/')
             filename = split[-1]
+            del split[-1]
+            screensPath = '/'.join(split)
             domain = filename.replace('.png', '')
             domainHash = hashlib.md5(domain + secretWord).hexdigest()
-            image = Image.open(screenshotPath)
-            image.thumbnail((227, 128), Image.ANTIALIAS)
-            image.save('%s_thumbnail.png' % domainHash, 'PNG')
+
+            thumbnailFilename = '%s/%s_thumbnail.jpg' % (screensPath,
+                                                         domainHash)
+            screenshot = ProcessScreenshot.open(screenshotPath)
+            screenshot.saveThumbnail(227, 128, thumbnailFilename, quality=60)
+
+            screenshotFilename = '%s/%s.jpg' % (screensPath, domainHash)
+            screenshot = ProcessScreenshot.open(screenshotPath)
+            screenshot.save(screenshotFilename, 60)
+
             os.remove(screenshotPath)
 
 
