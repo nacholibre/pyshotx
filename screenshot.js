@@ -8,16 +8,20 @@ function getScreenshot(domain) {
     page.onResourceTimeout = function(e) {
         console.log(domain+' timeout');
     };
-    page.open('http://'+domain+'/', function() {
-        page.evaluate(function() {
-            var style = document.createElement('style'),
-                text = document.createTextNode('BODY { background-color: #fff }');
-            style.setAttribute('type', 'text/css');
-            style.appendChild(text);
-            document.head.insertBefore(style, document.head.firstChild);
-        });
-        page.render(screenPath);
-        page.open(serverUrl + 'resize?screenshotPath='+screenPath);
+    page.open('http://'+domain+'/', function(status) {
+        if (status != 'success') {
+            console.log('Can\'t open '+domain);
+        } else {
+            page.evaluate(function() {
+                var style = document.createElement('style'),
+                    text = document.createTextNode('BODY { background-color: #fff }');
+                style.setAttribute('type', 'text/css');
+                style.appendChild(text);
+                document.head.insertBefore(style, document.head.firstChild);
+            });
+            page.render(screenPath);
+            page.open(serverUrl + 'resize?screenshotPath='+screenPath);
+        }
     });
 }
 
@@ -41,6 +45,6 @@ function getDomain() {
 }
 
 var serverUrl = 'http://0.0.0.0:8088/';
-var screenshotsPath = '/home/nacholibre/nacho_tarantula/screenshots/screens/';
+var screenshotsPath = 'screens/';
 
 setInterval(getDomain, 2000);
