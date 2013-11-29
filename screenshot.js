@@ -1,28 +1,3 @@
-//function getScreenshot(domain) {
-//    var screenPath = screenshotsPath + domain + '.png';
-//    page.clipRect = { top: 0, left: 0, width: 1366, height: 768 };
-//    page.viewportSize = { width: 1366, height: 768 };
-//    page.settings.userAgent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/30.0.1599.114 Chrome/30.0.1599.114 Safari/537.36';
-//    page.settings.resourceTimeout = 10000;
-//    page.onResourceTimeout = function(e) {
-//        console.log(domain+' timeout');
-//    };
-//    page.open('http://'+domain+'/', function(status) {
-//        if (status != 'success') {
-//            console.log('Can\'t open '+domain);
-//        } else {
-//            page.evaluate(function() {
-//                var style = document.createElement('style'),
-//                    text = document.createTextNode('BODY { background-color: #fff }');
-//                style.setAttribute('type', 'text/css');
-//                style.appendChild(text);
-//                document.head.insertBefore(style, document.head.firstChild);
-//            });
-//            takeScreenshot(page, 1366, 768);
-//        }
-//    });
-//}
-
 function fixPageBackground(page) {
     page.evaluate(function() {
         var style = document.createElement('style'),
