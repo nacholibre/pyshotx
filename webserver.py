@@ -83,7 +83,7 @@ def server(env, start_response):
 
 if __name__ == '__main__':
     parentPid = os.getpid()
-    GET_DOMAIN_URL = '/getDomain'
+    GET_DOMAIN_URL = '/get_domain'
     RESIZE_URL = '/resize'
 
     screenshotsQueueKey = 'screenshots_queue'
