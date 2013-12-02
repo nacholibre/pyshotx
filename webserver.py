@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/root/screenshots/env/bin/python
 import gevent
 from gevent import wsgi
 from gevent import queue
