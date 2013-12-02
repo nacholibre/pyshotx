@@ -5,13 +5,15 @@ showUsage () {
 }
 showArguments () {
     echo 'Arguments:'
-    echo '       -c                    Number of children screenshot taking processes'
-    echo '       -d                    Path to the screenshot directory, ending with /'
+    echo '       -c[=NUM]                    Number of children screenshot taking processes'
+    echo '       -d[=PATH]                   Path to the screenshot directory, ending with /'
+    echo '       -l                          Use directory levels when saving screenshots'
 }
 
 childrenProcesses=1
 screenshotsDirectory='screens/'
-while getopts "h?cd:" opt; do
+useLevels=false
+while getopts "h?cld:" opt; do
     case "$opt" in
         h|\?)
             showUsage
@@ -22,12 +24,15 @@ while getopts "h?cd:" opt; do
             ;;
         d)  screenshotsDirectory=$OPTARG
             ;;
+        l)
+            useLevels='levels'
+            ;;
     esac
 done
 
 pidsList=""
 
-./webserver.py > /dev/null 2> /dev/null &
+./webserver.py $useLevels > /dev/null 2> /dev/null &
 pidsList="$pidsList $!"
 for (( i=1; i <= childrenProcesses; i++ ))
 do
