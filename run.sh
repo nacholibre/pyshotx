@@ -7,7 +7,7 @@ showArguments () {
     echo 'Arguments:'
     echo '       -c[=NUM]                    Number of children screenshot taking processes'
     echo '       -d[=PATH]                   Path to the screenshot directory, ending with /'
-    echo '       -l                          Use directory levels when saving screenshots'
+    echo '       -l                          Use directory levels when saving screenshots. If you use this you need to fist generate levels using generate_levels.sh'
 }
 
 childrenProcesses=1
