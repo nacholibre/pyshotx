@@ -91,9 +91,9 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
 
                 os.remove(screenshotPath)
 
-            redisConnection.set('%s_done' % domain,
-                                json.dumps(thumbnailsList),
-                                60)
+            redisKey = '%s_done' % domain
+            redisConnection.set(redisKey, json.dumps(thumbnailsList))
+            redisConnection.expire(redisKey, 60)
 
 
 def waitForScreenshot(domain, screenshotsQueue):
