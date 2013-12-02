@@ -56,20 +56,20 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
                 split = screenshotPath.split('/')
                 filename = split[-1]
                 del split[-1]
-                screensPath = '/'.join(split)
+                savePath = '/'.join(split)
                 domainDevice = filename.replace('.png', '')
                 domain, device = domainDevice.split('_')
 
                 domainHash = hashlib.md5(domain + secretWord).hexdigest()
 
-                levels = '%s/%s/%s/%s' % (domainHash[0],
-                                          domainHash[1],
-                                          domainHash[2],
-                                          domainHash[3])
+                levels = '/%s/%s/%s/%s' % (domainHash[0],
+                                           domainHash[1],
+                                           domainHash[2],
+                                           domainHash[3])
 
                 if useLevels:
-                    screensPath = screensPath + '%s/' % levels
-                thumbnailFilename = '%s/%s_%s_thumbnail.jpg' % (screensPath,
+                    savePath = savePath + '%s' % levels
+                thumbnailFilename = '%s/%s_%s_thumbnail.jpg' % (savePath,
                                                                 domainHash,
                                                                 device)
                 screenshot = ProcessScreenshot.open(screenshotPath)
@@ -89,7 +89,7 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
                                              thumbnailFilename,
                                              quality=60)
 
-                screenshotFilename = '%s/%s_%s.jpg' % (screensPath,
+                screenshotFilename = '%s/%s_%s.jpg' % (savePath,
                                                        domainHash,
                                                        device)
                 screenshot = ProcessScreenshot.open(screenshotPath)
