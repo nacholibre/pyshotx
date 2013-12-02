@@ -8,16 +8,27 @@ function fixPageBackground(page) {
     });
 }
 
-function updateTakenScreens() {
+function updateTakenScreens(screenshotPath) {
     takenScreens += 1;
+    if (screenshotPath) {
+        takenScreensPaths.push(screenshotPath);
+    }
     console.log('Rendered! Screenshots: ' + takenScreens);
     if (takenScreens >= devices.length) {
-        takenScreens = 0;
-        //phantom.exit();
+        page.open(serverUrl + 'resize?screenshots='+takenScreensPaths.join(','), function() {
+            usingPage = false;
+            takenScreens = 0;
+            takenScreensPaths = new Array();
+            takingScreens = false;
+            readServerResponse();
+        });
+    } else {
+        usingPage = false;
     }
 }
 
 function takeScreenshot(device) {
+    takingScreens = true
     if (usingPage == true) {
         setTimeout(function () {
             takeScreenshot(device);
@@ -37,15 +48,14 @@ function takeScreenshot(device) {
     };
     page.open('http://'+domain+'/', function(status) {
         if (status != 'success') {
+            updateTakenScreens();
             console.log('Can\'t open '+domain);
         } else {
             fixPageBackground(page);
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
             page.render(screenPath);
-            //page.open(serverUrl + 'resize?screenshotPath='+screenPath);
+            updateTakenScreens(screenPath);
         }
-        updateTakenScreens();
-        usingPage = false;
     });
 }
 
@@ -57,32 +67,37 @@ function takeScreenshots() {
 }
 
 function readServerResponse() {
-    if (usingPage == true) {
-        setTimeout("readServerResponse", 500);
+    if (takingScreens == true) {
+        setTimeout(function () { readServerResponse() }, 2000);
         return;
     }
-    usingPage = true;
+
     page.settings.resourceTimeout = 10000;
     page.onResourceTimeout = function(e) {
         console.log('Server timeout.');
+        setTimeout(function () { readServerResponse() }, 2000);
+        return;
     };
     page.open(serverUrl + 'get_domain', function(status) {
         if (status != 'success') {
             //http request to the server failed
             console.log('ERROR: Communication to the server failed');
+            setTimeout(function () { readServerResponse() }, 2000);
+            return;
         } else {
             var serverResponse = page.evaluate(function () {
                 return document.body.innerHTML
             });
             if (serverResponse == 'empty') {
                 console.log('No domains left in the queue.');
+                setTimeout(function () { readServerResponse() }, 2000);
+                return;
             } else {
                 domain = serverResponse;
                 console.log('Taking screenshot of ' + domain);
                 takeScreenshots(domain);
             }
         }
-        usingPage = false;
     });
 }
 
@@ -126,6 +141,8 @@ function Device() {
 }
 
 var takenScreens = 0;
+var takingScreens = false;
+var takenScreensPaths = new Array();
 var usingPage = false;
 var page = require('webpage').create();
 var devices = new Array();
@@ -145,7 +162,7 @@ iPad.setUserAgent('Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X) AppleWebKit/534.
 devices.push(iPad);
 
 var laptop = new Device();
-laptop.setDeviceName('Laptop');
+laptop.setDeviceName('laptop');
 laptop.setWidth(1280);
 laptop.setHeight(768);
 laptop.setUserAgent('Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/30.0.1599.114 Chrome/30.0.1599.114 Safari/537.36');
@@ -154,4 +171,4 @@ devices.push(laptop);
 var serverUrl = 'http://0.0.0.0:8088/';
 var screenshotsPath = 'screens/';
 
-setInterval(readServerResponse, 2000);
+readServerResponse();
