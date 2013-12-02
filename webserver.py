@@ -101,6 +101,7 @@ def waitForScreenshot(domain, screenshotsQueue):
     while True:
         getScreenshots = redisConnection.get('%s_done' % domain)
         if getScreenshots is not None:
+            redisConnection.delete('%s_done' % domain)
             screenshotsQueue.put(getScreenshots)
             screenshotsQueue.put(StopIteration)
             break
