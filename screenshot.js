@@ -8,14 +8,27 @@ function fixPageBackground(page) {
     });
 }
 
-function updateTakenScreens(screenshotPath) {
-    takenScreens += 1;
-    if (screenshotPath) {
-        takenScreensPaths.push(screenshotPath);
+function generateJSON() {
+    console.log('generate json');
+    var devicesScreens = new Object();
+    for (var device in devices) {
+        currentDevice = devices[device];
+        if (currentDevice.getDeviceName() == 'laptop') {
+            devicesScreens[currentDevice.getDeviceName()] = null;
+        } else {
+            devicesScreens[currentDevice.getDeviceName()] = currentDevice.getScreenshot();
+        }
+
     }
+    return JSON.stringify(devicesScreens);
+}
+
+function updateTakenScreens() {
+    takenScreens += 1;
+
     console.log('Rendered! Screenshots: ' + takenScreens);
     if (takenScreens >= devices.length) {
-        page.open(serverUrl + 'resize?screenshots='+takenScreensPaths.join(','), function() {
+        page.open(serverUrl + 'resize?screenshots='+generateJSON(), function() {
             usingPage = false;
             takenScreens = 0;
             takenScreensPaths = new Array();
@@ -30,22 +43,32 @@ function updateTakenScreens(screenshotPath) {
 function takeScreenshot(device) {
     takingScreens = true
     if (usingPage == true) {
-        setTimeout(function () {
-            takeScreenshot(device);
-        }, 500);
+        setTimeout(function () { takeScreenshot(device) }, 500);
         return;
     }
+
     var screenPath = screenshotsPath + domain + '_' + device.getDeviceName() + '.png';
+
+    //set global variable to lock other takeScreenshot functions until
+    //usingPage is false
     usingPage = true;
+
+    //settings
     page.clipRect = { top: 0, left: 0, width: device.getWidth(), height: device.getHeight() };
     page.viewportSize = { width: device.getWidth(), height: device.getHeight() };
-
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 10000;
+
+    //timeout callback
     page.onResourceTimeout = function(e) {
         console.log(domain + ' timeout for device ' + device.getDeviceName());
         updateTakenScreens();
     };
+
+    //unset previous device screenshot, because we reuse objects
+    device.setScreenshot(null);
+
+    //open page
     page.open('http://'+domain+'/', function(status) {
         if (status != 'success') {
             updateTakenScreens();
@@ -54,7 +77,8 @@ function takeScreenshot(device) {
             fixPageBackground(page);
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
             page.render(screenPath);
-            updateTakenScreens(screenPath);
+            device.setScreenshot(screenPath)
+            updateTakenScreens();
         }
     });
 }
@@ -106,6 +130,7 @@ function Device() {
     this.height = 0;
     this.userAgent = '';
     this.deviceName = '';
+    this.screenshotPath = null;
 
     this.setDeviceName = function (name) {
         this.deviceName = name;
@@ -137,6 +162,14 @@ function Device() {
 
     this.getUserAgent = function () {
         return this.userAgent;
+    }
+
+    this.setScreenshot = function (path) {
+        this.screenshotPath = path;
+    }
+
+    this.getScreenshot = function () {
+        return this.screenshotPath;
     }
 }
 

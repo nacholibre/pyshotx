@@ -10,6 +10,7 @@ import Image
 import os
 import sys
 import json
+import urllib2
 
 
 class Screenshot(object):
@@ -42,16 +43,17 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
         if screenshotsForResizing is None:
             time.sleep(1)
         else:
-            screenshotsList = []
-            thumbnailsList = []
-            if ',' not in screenshotsForResizing:
-                #meaning single screenshot is found
-                screenshotsList.append(screenshotsForResizing)
-            else:
-                for screenshot in screenshotsForResizing.split(','):
-                    screenshotsList.append(screenshot)
+            thumbnailsList = dict()
+            screenshotsJson = json.loads(screenshotsForResizing)
 
-            for screenshot in screenshotsList:
+            for deviceName, screenshot in screenshotsJson.iteritems():
+                #check if phantomjs has created screenshot for this device
+                if not screenshot:
+                    thumbnailsList[deviceName] = dict()
+                    thumbnailsList[deviceName]['screenshot'] = None
+                    thumbnailsList[deviceName]['thumbnail'] = None
+                    continue
+
                 screenshotPath = screenshot
                 split = screenshotPath.split('/')
                 filename = split[-1]
@@ -94,7 +96,10 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
                                                        device)
                 screenshot = ProcessScreenshot.open(screenshotPath)
                 screenshot.save(screenshotFilename, 60)
-                thumbnailsList.append(screenshotFilename)
+
+                thumbnailsList[deviceName] = dict()
+                thumbnailsList[deviceName]['screenshot'] = screenshotFilename
+                thumbnailsList[deviceName]['thumbnail'] = thumbnailFilename
 
                 os.remove(screenshotPath)
 
@@ -137,6 +142,7 @@ def server(env, start_response):
             queryKey, screenshots = queryString.split('=')
         except Exception:
             return ['error']
+        screenshots = urllib2.unquote(screenshots)
         redisConnection.sadd(resizeQueueKey, screenshots)
         return ['okay']
 
