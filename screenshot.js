@@ -169,6 +169,7 @@ laptop.setUserAgent('Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, li
 devices.push(laptop);
 
 var serverUrl = 'http://0.0.0.0:8088/';
-var screenshotsPath = 'screens/';
+var args = require('system').args;
+var screenshotsPath = args[1]
 
 readServerResponse();

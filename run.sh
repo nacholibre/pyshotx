@@ -6,9 +6,12 @@ showUsage () {
 showArguments () {
     echo 'Arguments:'
     echo '       -c                    Number of children screenshot taking processes'
+    echo '       -d                    Path to the screenshot directory, ending with /'
 }
 
-while getopts "h?c:" opt; do
+childrenProcesses=1
+screenshotsDirectory='screens/'
+while getopts "h?cd:" opt; do
     case "$opt" in
         h|\?)
             showUsage
@@ -17,12 +20,10 @@ while getopts "h?c:" opt; do
             ;;
         c)  childrenProcesses=$OPTARG
             ;;
+        d)  screenshotsDirectory=$OPTARG
+            ;;
     esac
 done
-
-if [ -z "$*" ]; then
-    childrenProcesses=1
-fi
 
 pidsList=""
 
@@ -30,7 +31,7 @@ pidsList=""
 pidsList="$pidsList $!"
 for (( i=1; i <= childrenProcesses; i++ ))
 do
-    phantomjs screenshot.js > /dev/null 2> /dev/null &
+    phantomjs screenshot.js $screenshotsDirectory > /dev/null 2> /dev/null &
     pidsList="$pidsList $!"
 done
 
