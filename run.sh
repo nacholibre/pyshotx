@@ -7,6 +7,7 @@ showArguments () {
     echo 'Arguments:'
     echo '       -c                    Number of children screenshot taking processes'
     echo '       -d                    Path to the screenshot directory, ending with /'
+    echo '       -l                    Use levels'
 }
 
 childrenProcesses=1

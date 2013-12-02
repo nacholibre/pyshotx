@@ -32,7 +32,7 @@ class ProcessScreenshot(object):
 
 
 def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
-                 sw, parentPid):
+                 sw, parentPid, useLevels):
     secretWord = sw
     while True:
         #check if parent process exists, if not kill children
@@ -62,6 +62,13 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
 
                 domainHash = hashlib.md5(domain + secretWord).hexdigest()
 
+                levels = '%s/%s/%s/%s' % (domainHash[0],
+                                          domainHash[1],
+                                          domainHash[2],
+                                          domainHash[3])
+
+                if useLevels:
+                    screensPath = screensPath + '%s/' % levels
                 thumbnailFilename = '%s/%s_%s_thumbnail.jpg' % (screensPath,
                                                                 domainHash,
                                                                 device)
@@ -147,6 +154,9 @@ def server(env, start_response):
 
 
 if __name__ == '__main__':
+    useLevels = False
+    if 'levels' in sys.argv:
+        useLevels = True
     parentPid = os.getpid()
     GET_DOMAIN_URL = '/get_domain'
     RESIZE_URL = '/resize'
@@ -163,7 +173,8 @@ if __name__ == '__main__':
                                                   screenshotsQueueKey,
                                                   resizeQueueKey,
                                                   secretWord,
-                                                  parentPid))
+                                                  parentPid,
+                                                  useLevels))
     resizeProcess.start()
 
     wsgi.WSGIServer(('', 8088), server).serve_forever()
