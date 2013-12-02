@@ -13,12 +13,7 @@ function generateJSON() {
     var devicesScreens = new Object();
     for (var device in devices) {
         currentDevice = devices[device];
-        if (currentDevice.getDeviceName() == 'laptop') {
-            devicesScreens[currentDevice.getDeviceName()] = null;
-        } else {
-            devicesScreens[currentDevice.getDeviceName()] = currentDevice.getScreenshot();
-        }
-
+        devicesScreens[currentDevice.getDeviceName()] = currentDevice.getScreenshot();
     }
     return JSON.stringify(devicesScreens);
 }
