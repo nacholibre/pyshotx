@@ -36,6 +36,9 @@ function updateTakenScreens() {
 }
 
 function takeScreenshot(device) {
+    //unset previous device screenshot, because we reuse objects
+    device.setScreenshot(null);
+
     takingScreens = true
     if (usingPage == true) {
         setTimeout(function () { takeScreenshot(device) }, 500);
@@ -59,9 +62,6 @@ function takeScreenshot(device) {
         console.log(domain + ' timeout for device ' + device.getDeviceName());
         updateTakenScreens();
     };
-
-    //unset previous device screenshot, because we reuse objects
-    device.setScreenshot(null);
 
     //open page
     page.open('http://'+domain+'/', function(status) {
