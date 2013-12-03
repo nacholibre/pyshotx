@@ -15,7 +15,7 @@ childrenProcesses=1
 screenshotsDirectory='screens/'
 useLevels=false
 debug=false
-while getopts "h?cled:" opt; do
+while getopts "h?c:led:" opt; do
     case "$opt" in
         h|\?)
             showUsage
