@@ -55,7 +55,7 @@ function takeScreenshot(device) {
     page.clipRect = { top: 0, left: 0, width: device.getWidth(), height: device.getHeight() };
     page.viewportSize = { width: device.getWidth(), height: device.getHeight() };
     page.settings.userAgent = device.getUserAgent()
-    page.settings.resourceTimeout = 10000;
+    page.settings.resourceTimeout = 30000;
 
     //timeout callback
     page.onResourceTimeout = function(e) {
