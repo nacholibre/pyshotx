@@ -23,7 +23,7 @@ function updateTakenScreens() {
 
     console.log('Rendered! Screenshots: ' + takenScreens);
     if (takenScreens >= devices.length) {
-        page.open(serverUrl + 'resize?screenshots='+generateJSON(), function() {
+        page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
             usingPage = false;
             takenScreens = 0;
             takenScreensPaths = new Array();
@@ -80,6 +80,7 @@ function takeScreenshot(device) {
 
 function takeScreenshots() {
     takingScreenshots = true;
+    console.log('Taking screenshot of ' + domain);
     takeScreenshot(iPhone);
     takeScreenshot(iPad);
     takeScreenshot(laptop);
@@ -90,6 +91,8 @@ function readServerResponse() {
         setTimeout(function () { readServerResponse() }, 2000);
         return;
     }
+
+    domain = null;
 
     page.settings.resourceTimeout = 10000;
     page.onResourceTimeout = function(e) {
@@ -113,7 +116,6 @@ function readServerResponse() {
                 return;
             } else {
                 domain = serverResponse;
-                console.log('Taking screenshot of ' + domain);
                 takeScreenshots(domain);
             }
         }
@@ -168,6 +170,7 @@ function Device() {
     }
 }
 
+var domain = null;
 var takenScreens = 0;
 var takingScreens = false;
 var takenScreensPaths = new Array();

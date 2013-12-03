@@ -2,6 +2,7 @@
 import gevent
 from gevent import wsgi
 from gevent import queue
+from urlparse import urlparse, parse_qs
 import time
 import redis
 import multiprocessing
@@ -39,11 +40,14 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
         #check if parent process exists, if not kill children
         if not os.path.exists("/proc/%s" % parentPid):
             sys.exit()
-        screenshotsForResizing = redisConnection.spop(resizeQueueKey)
-        if screenshotsForResizing is None:
+
+        resizeRedis = redisConnection.spop(resizeQueueKey)
+        if resizeRedis is None:
             time.sleep(1)
         else:
+            domain, screenshotsForResizing = resizeRedis.split('@')
             thumbnailsList = dict()
+
             screenshotsJson = json.loads(screenshotsForResizing)
 
             for deviceName, screenshot in screenshotsJson.iteritems():
@@ -145,12 +149,12 @@ def server(env, start_response):
             return ['empty']
 
     if path == RESIZE_URL:
-        try:
-            queryKey, screenshots = queryString.split('=')
-        except Exception:
-            return ['error']
-        screenshots = urllib2.unquote(screenshots)
-        redisConnection.sadd(resizeQueueKey, screenshots)
+        query = parse_qs(urlparse('?' + queryString).query)
+        screenshotsJson = query['screenshots'][0]
+        domain = query['domain'][0]
+        screenshotsJson = urllib2.unquote(screenshotsJson)
+        redisConnection.sadd(resizeQueueKey, '%s@%s' % (domain,
+                                                        screenshotsJson))
         return ['okay']
 
     if path == CREATE_SCREENSHOT:
