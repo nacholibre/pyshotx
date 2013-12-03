@@ -154,6 +154,7 @@ def server(env, start_response):
             return ['error']
         redisConnection.sadd(screenshotsQueueKey, domain)
         gevent.spawn(waitForScreenshot, domain, screenshots)
+        print 'return screenshots to the client'
         return screenshots
 
     return ['error']
