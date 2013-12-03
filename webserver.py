@@ -47,14 +47,21 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
             screenshotsJson = json.loads(screenshotsForResizing)
 
             for deviceName, screenshot in screenshotsJson.iteritems():
+                screenshotPath = screenshot
+                thumbnailsList[deviceName] = dict()
+                thumbnailsList[deviceName]['screenshot'] = None
+                thumbnailsList[deviceName]['thumbnail'] = None
+
                 #check if phantomjs has created screenshot for this device
                 if not screenshot:
-                    thumbnailsList[deviceName] = dict()
-                    thumbnailsList[deviceName]['screenshot'] = None
-                    thumbnailsList[deviceName]['thumbnail'] = None
                     continue
 
-                screenshotPath = screenshot
+                #check if screenshot really exists
+                try:
+                    open(screenshotPath, 'r')
+                except Exception:
+                    continue
+
                 split = screenshotPath.split('/')
                 filename = split[-1]
                 del split[-1]
