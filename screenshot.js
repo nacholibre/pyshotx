@@ -59,7 +59,10 @@ function takeScreenshot(device) {
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 30000;
 
-    var redirectURL = null;
+    page.onResourceError = function(resourceError) {
+        page.reason = resourceError.errorString;
+        page.reason_url = resourceError.url;
+    };
 
     //timeout callback
     page.onResourceTimeout = function(e) {
@@ -72,6 +75,10 @@ function takeScreenshot(device) {
         if (status != 'success') {
             updateTakenScreens();
             console.log('Can\'t open '+domain);
+            console.log(
+                "Error opening url \"" + page.reason_url
+                + "\": " + page.reason
+            );
         } else {
             fixPageBackground(page);
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
