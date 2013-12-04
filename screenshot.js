@@ -51,11 +51,15 @@ function takeScreenshot(device) {
     //usingPage is false
     usingPage = true;
 
+    page = require('webpage').create();
+
     //settings
     page.clipRect = { top: 0, left: 0, width: device.getWidth(), height: device.getHeight() };
     page.viewportSize = { width: device.getWidth(), height: device.getHeight() };
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 30000;
+
+    var redirectURL = null;
 
     //timeout callback
     page.onResourceTimeout = function(e) {
@@ -93,6 +97,8 @@ function readServerResponse() {
     }
 
     domain = null;
+
+    page = require('webpage').create();
 
     page.settings.resourceTimeout = 10000;
     page.onResourceTimeout = function(e) {
@@ -175,7 +181,7 @@ var takenScreens = 0;
 var takingScreens = false;
 var takenScreensPaths = new Array();
 var usingPage = false;
-var page = require('webpage').create();
+var page = null;
 var devices = new Array();
 
 var iPhone = new Device();
