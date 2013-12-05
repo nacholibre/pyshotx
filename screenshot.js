@@ -99,6 +99,7 @@ function takeScreenshots() {
 
 function readServerResponse() {
     if (takingScreens == true) {
+        console.log('taking screens...');
         setTimeout(function () { readServerResponse() }, 2000);
         return;
     }
