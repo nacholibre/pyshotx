@@ -44,6 +44,7 @@ function takeScreenshot(device) {
 
     takingScreens = true
     if (usingPage == true) {
+        console.log('using page..');
         setTimeout(function () { takeScreenshot(device) }, 500);
         return;
     }
@@ -99,7 +100,7 @@ function takeScreenshots() {
 
 function readServerResponse() {
     if (takingScreens == true) {
-        console.log('taking screens...');
+        console.log('Waiting for screenshots...');
         setTimeout(function () { readServerResponse() }, 2000);
         return;
     }
