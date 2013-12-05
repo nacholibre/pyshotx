@@ -76,19 +76,15 @@ function takeScreenshot(device) {
 
     //open page
     page.open('http://'+domain+'/', function(status) {
+        updateTakenScreens();
         if (status != 'success') {
-            updateTakenScreens();
-            console.log('Can\'t open '+domain);
-            console.log(
-                "Error opening url \"" + page.reason_url
-                + "\": " + page.reason
-            );
+            console.log('Can\'t open ' + domain);
+            console.log('Error opening url' + page.reason_url + ': ' + page.reason);
         } else {
-            fixPageBackground(page);
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
+            fixPageBackground(page);
             page.render(screenPath);
             device.setScreenshot(screenPath)
-            updateTakenScreens();
         }
     });
 }
