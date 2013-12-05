@@ -82,11 +82,13 @@ function takeScreenshot(device) {
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 10000;
 
-    page.onResourceError = function(resourceError) {
-        page.reason = resourceError.errorString;
-        page.reason_url = resourceError.url;
-        onDeviceScreenshot(null, device);
-    };
+    //page.onResourceError = function(resourceError) {
+    //    page.reason = resourceError.errorString;
+    //    page.reason_url = resourceError.url;
+    //    console.log('      resource error: ' + page.reason);
+    //    onDeviceScreenshot(null, device);
+    //    //return;
+    //};
 
     //timeout callback
     page.onResourceTimeout = function(e) {
@@ -98,7 +100,6 @@ function takeScreenshot(device) {
     page.open('http://'+domain+'/', function(status) {
         if (status != 'success') {
             console.log('Can\'t open ' + domain);
-            console.log('Error opening url' + page.reason_url + ': ' + page.reason);
         } else {
             console.log('  Rendering ' + device.getDeviceName() + ' screenshot..');
             fixPageBackground(page);
