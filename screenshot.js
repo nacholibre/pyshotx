@@ -23,6 +23,8 @@ function updateTakenScreens() {
 
     console.log('Rendered! Screenshots: ' + takenScreens);
     if (takenScreens >= devices.length) {
+        page.close();
+        page = require('webpage').create();
         page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
             usingPage = false;
             takenScreens = 0;
@@ -51,6 +53,7 @@ function takeScreenshot(device) {
     //usingPage is false
     usingPage = true;
 
+    page.close();
     page = require('webpage').create();
 
     //settings
@@ -59,7 +62,10 @@ function takeScreenshot(device) {
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 30000;
 
-    var redirectURL = null;
+    page.onResourceError = function(resourceError) {
+        page.reason = resourceError.errorString;
+        page.reason_url = resourceError.url;
+    };
 
     //timeout callback
     page.onResourceTimeout = function(e) {
@@ -72,6 +78,10 @@ function takeScreenshot(device) {
         if (status != 'success') {
             updateTakenScreens();
             console.log('Can\'t open '+domain);
+            console.log(
+                "Error opening url \"" + page.reason_url
+                + "\": " + page.reason
+            );
         } else {
             fixPageBackground(page);
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
@@ -98,6 +108,7 @@ function readServerResponse() {
 
     domain = null;
 
+    page.close();
     page = require('webpage').create();
 
     page.settings.resourceTimeout = 10000;
@@ -181,7 +192,7 @@ var takenScreens = 0;
 var takingScreens = false;
 var takenScreensPaths = new Array();
 var usingPage = false;
-var page = null;
+var page = require('webpage').create();
 var devices = new Array();
 
 var iPhone = new Device();
