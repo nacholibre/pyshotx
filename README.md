@@ -1,5 +1,8 @@
 pyshotx
 =======
+pyshotx is a phantomjs screenshot server written in python using phantomjs headless
+browser which doesn't require running X server.
+
 ##Required software
 * gevent - pip install gevent
 * phantomjs (1.9 or up) - http://phantomjs.org
@@ -17,6 +20,7 @@ PIL is used for resizing the screenshots.
 ##Usage
     ./run.sh -e -d screens/
 Open: http://0.0.0.0:8088/create?domain=ebay.com and wait for the screenshots.
+
 If nothing happens check the logfiles:
 * webserver.log
 * sphantomjs_children_1.log
