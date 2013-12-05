@@ -20,13 +20,14 @@ function generateJSON() {
 
 function updateTakenScreens() {
     takenScreens += 1;
+    console.log('update taken screens: ' + takenScreens);
 
-    console.log('Rendered! Screenshots: ' + takenScreens);
     if (takenScreens >= devices.length) {
+        console.log('send');
+
         page.close();
         page = require('webpage').create();
         page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
-            console.log('send screenshots to the webserver');
             usingPage = false;
             takenScreens = 0;
             takenScreensPaths = new Array();
@@ -34,28 +35,29 @@ function updateTakenScreens() {
             readServerResponse();
         });
     } else {
+        console.log('taken screens not using page');
         usingPage = false;
     }
 }
 
 function takeScreenshot(device) {
-    //unset previous device screenshot, because we reuse objects
-    device.setScreenshot(null);
-
     takingScreens = true
+
     if (usingPage == true) {
         setTimeout(function () { takeScreenshot(device) }, 500);
         return;
     }
 
-    var screenPath = screenshotsPath + domain + '_' + device.getDeviceName() + '.png';
+    page.close();
 
     //set global variable to lock other takeScreenshot functions until
     //usingPage is false
     usingPage = true;
 
-    page.close();
     page = require('webpage').create();
+
+    //generate screenshot path
+    var screenPath = screenshotsPath + domain + '_' + device.getDeviceName() + '.png';
 
     //settings
     page.clipRect = { top: 0, left: 0, width: device.getWidth(), height: device.getHeight() };
@@ -66,7 +68,6 @@ function takeScreenshot(device) {
     page.onResourceError = function(resourceError) {
         page.reason = resourceError.errorString;
         page.reason_url = resourceError.url;
-        updateTakenScreens();
     };
 
     //timeout callback
@@ -77,7 +78,6 @@ function takeScreenshot(device) {
 
     //open page
     page.open('http://'+domain+'/', function(status) {
-        updateTakenScreens();
         if (status != 'success') {
             console.log('Can\'t open ' + domain);
             console.log('Error opening url' + page.reason_url + ': ' + page.reason);
@@ -85,17 +85,25 @@ function takeScreenshot(device) {
             console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
             fixPageBackground(page);
             page.render(screenPath);
-            device.setScreenshot(screenPath)
+            device.setScreenshot(screenPath);
+            console.log('set screenshot');
         }
+        updateTakenScreens();
     });
 }
 
-function takeScreenshots() {
+function runDevicesScreenshots() {
     takingScreenshots = true;
     console.log('Taking screenshot of ' + domain);
-    takeScreenshot(iPhone);
-    takeScreenshot(iPad);
-    takeScreenshot(laptop);
+
+    for (var device in devices) {
+        currentDevice = devices[device];
+
+        //unset previous device screenshot, because we reuse objects
+        currentDevice.setScreenshot(null);
+
+        takeScreenshot(currentDevice);
+    }
 }
 
 function readServerResponse() {
@@ -116,6 +124,7 @@ function readServerResponse() {
         setTimeout(function () { readServerResponse() }, 2000);
         return;
     };
+
     page.open(serverUrl + 'get_domain', function(status) {
         if (status != 'success') {
             //http request to the server failed
@@ -132,7 +141,7 @@ function readServerResponse() {
                 return;
             } else {
                 domain = serverResponse;
-                takeScreenshots(domain);
+                runDevicesScreenshots(domain);
             }
         }
     });
