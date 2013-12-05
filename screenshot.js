@@ -11,48 +11,65 @@ function fixPageBackground(page) {
 function generateJSON() {
     console.log('generate json');
     var devicesScreens = new Object();
-    for (var device in devices) {
-        currentDevice = devices[device];
+    for (var deviceIndex in devices) {
+        var currentDevice = devices[deviceIndex];
         devicesScreens[currentDevice.getDeviceName()] = currentDevice.getScreenshot();
     }
     return JSON.stringify(devicesScreens);
 }
 
-function updateTakenScreens() {
-    takenScreens += 1;
-    console.log('update taken screens: ' + takenScreens);
+function allDevicesDone() {
+    var doneDevices = 0;
+    for (var deviceIndex in devices) {
+        var currentDevice = devices[deviceIndex];
+        if (currentDevice.getStatus() == 'done') {
+            doneDevices += 1;
+        }
+    }
 
-    if (takenScreens >= devices.length) {
-        console.log('send');
-
-        page.close();
-        page = require('webpage').create();
-        page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
-            usingPage = false;
-            takenScreens = 0;
-            takenScreensPaths = new Array();
-            takingScreens = false;
-            readServerResponse();
-        });
+    if (doneDevices == devices.length) {
+        return true;
     } else {
-        console.log('taken screens not using page');
-        usingPage = false;
+        return false;
     }
 }
 
-function takeScreenshot(device) {
-    takingScreens = true
+function onDeviceScreenshot(status, device) {
+    device.setStatus('done');
 
-    if (usingPage == true) {
+    if (allDevicesDone() == true) {
+        console.log('send for resizing');
+        page.close();
+        page = require('webpage').create();
+        page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
+            resetDevices();
+            readServerResponse();
+        });
+    }
+}
+
+function screenshotInProgress() {
+    for (var deviceIndex in devices) {
+        var currentDevice = devices[deviceIndex];
+        if (currentDevice.getStatus() == 'working') {
+            return true;
+        }
+    }
+    return false;
+}
+
+function takeScreenshot(device) {
+    if (screenshotInProgress() == true) {
+        console.log('      waiting....');
+        //wait until page is free
+        //because we can't use async webpage in phantomjs
         setTimeout(function () { takeScreenshot(device) }, 500);
         return;
     }
 
-    page.close();
+    device.setStatus('working');
 
-    //set global variable to lock other takeScreenshot functions until
-    //usingPage is false
-    usingPage = true;
+    page.close();
 
     page = require('webpage').create();
 
@@ -68,12 +85,13 @@ function takeScreenshot(device) {
     page.onResourceError = function(resourceError) {
         page.reason = resourceError.errorString;
         page.reason_url = resourceError.url;
+        onDeviceScreenshot(null, device);
     };
 
     //timeout callback
     page.onResourceTimeout = function(e) {
         console.log(domain + ' timeout for device ' + device.getDeviceName());
-        updateTakenScreens();
+        onDeviceScreenshot(null, device);
     };
 
     //open page
@@ -82,33 +100,41 @@ function takeScreenshot(device) {
             console.log('Can\'t open ' + domain);
             console.log('Error opening url' + page.reason_url + ': ' + page.reason);
         } else {
-            console.log('Rendering ' + device.getDeviceName() + ' screenshot..');
+            console.log('  Rendering ' + device.getDeviceName() + ' screenshot..');
             fixPageBackground(page);
             page.render(screenPath);
+
+            console.log('  Done');
             device.setScreenshot(screenPath);
-            console.log('set screenshot');
         }
-        updateTakenScreens();
+        onDeviceScreenshot(null, device);
     });
 }
 
+function resetDevices() {
+    for (var deviceIndex in devices) {
+        var currentDevice = devices[deviceIndex];
+
+        //reset device status and screenshotpath
+        currentDevice.reset();
+    }
+}
+
 function runDevicesScreenshots() {
-    takingScreenshots = true;
-    console.log('Taking screenshot of ' + domain);
+    console.log('runDevicesScreenshots() for: ' + domain);
 
-    for (var device in devices) {
-        currentDevice = devices[device];
+    resetDevices();
 
-        //unset previous device screenshot, because we reuse objects
-        currentDevice.setScreenshot(null);
+    for (var deviceIndex in devices) {
+        var currentDevice = devices[deviceIndex];
 
         takeScreenshot(currentDevice);
     }
 }
 
 function readServerResponse() {
-    if (takingScreens == true) {
-        console.log('Waiting for screenshots...');
+    if (screenshotInProgress() == true) {
+        //console.log('Waiting for screenshots...');
         setTimeout(function () { readServerResponse() }, 2000);
         return;
     }
@@ -136,7 +162,7 @@ function readServerResponse() {
                 return document.body.innerHTML
             });
             if (serverResponse == 'empty') {
-                console.log('No domains left in the queue.');
+                console.log('No domains left in the queue. Retry..');
                 setTimeout(function () { readServerResponse() }, 2000);
                 return;
             } else {
@@ -153,10 +179,25 @@ function Device() {
     this.userAgent = '';
     this.deviceName = '';
     this.screenshotPath = null;
+    this.status = null;
+
+    this.reset = function () {
+        this.status = null;
+        this.screenshotPath = null;
+    }
+
+    this.setStatus = function (status) {
+        this.status = status;
+    }
+
+    this.getStatus = function () {
+        return this.status;
+    }
 
     this.setDeviceName = function (name) {
         this.deviceName = name;
     }
+
 
     this.getDeviceName = function () {
         return this.deviceName;
@@ -196,10 +237,6 @@ function Device() {
 }
 
 var domain = null;
-var takenScreens = 0;
-var takingScreens = false;
-var takenScreensPaths = new Array();
-var usingPage = false;
 var page = require('webpage').create();
 var devices = new Array();
 
