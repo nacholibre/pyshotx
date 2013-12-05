@@ -46,7 +46,7 @@ pidsList="$pidsList $!"
 for (( i=1; i <= childrenProcesses; i++ ))
 do
     if $debug; then
-        phantomjs screenshot.js $screenshotsDirectory >& phantomjs_children.log &
+        phantomjs screenshot.js $screenshotsDirectory >& phantomjs_children_$i.log &
     else
         phantomjs screenshot.js $screenshotsDirectory >& /dev/null &
     fi
