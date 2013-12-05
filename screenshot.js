@@ -26,6 +26,7 @@ function updateTakenScreens() {
         page.close();
         page = require('webpage').create();
         page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
+            console.log('send screenshots to the webserver');
             usingPage = false;
             takenScreens = 0;
             takenScreensPaths = new Array();
