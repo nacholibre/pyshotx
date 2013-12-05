@@ -1,7 +1,6 @@
 pyshotx
 =======
-Required software
----------------------
+#Required software
     gevent - pip install gevent
     phantomjs (1.9 or up) - http://phantomjs.org
     redis - http://redis.io
@@ -14,9 +13,6 @@ process.
 redis-py is redis client for python
 PIL is used for resizing the screenshots.
 
-Usage
----------------------
+#Usage
     ./run.sh -e -d screens/
-Open: http://0.0.0.0:8088/create?domain=ebay.com
-If everything and after a while you should get json with the created
-screenshots and thumbnails.
+Open: http://0.0.0.0:8088/create?domain=ebay.com and wait for the screenshots.
