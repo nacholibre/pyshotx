@@ -44,7 +44,6 @@ function takeScreenshot(device) {
 
     takingScreens = true
     if (usingPage == true) {
-        console.log('using page..');
         setTimeout(function () { takeScreenshot(device) }, 500);
         return;
     }
@@ -67,6 +66,7 @@ function takeScreenshot(device) {
     page.onResourceError = function(resourceError) {
         page.reason = resourceError.errorString;
         page.reason_url = resourceError.url;
+        updateTakenScreens();
     };
 
     //timeout callback
