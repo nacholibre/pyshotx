@@ -17,6 +17,7 @@ PIL is used for resizing the screenshots.
 ##Usage
     ./run.sh -e -d screens/
 Open: http://0.0.0.0:8088/create?domain=ebay.com and wait for the screenshots.
+
 If nothing happens check the logfiles:
 * webserver.log
 * sphantomjs_children_1.log
