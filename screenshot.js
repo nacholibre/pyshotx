@@ -80,21 +80,7 @@ function takeScreenshot(device) {
     page.clipRect = { top: 0, left: 0, width: device.getWidth(), height: device.getHeight() };
     page.viewportSize = { width: device.getWidth(), height: device.getHeight() };
     page.settings.userAgent = device.getUserAgent()
-    page.settings.resourceTimeout = 10000;
-
-    //page.onResourceError = function(resourceError) {
-    //    page.reason = resourceError.errorString;
-    //    page.reason_url = resourceError.url;
-    //    console.log('      resource error: ' + page.reason);
-    //    onDeviceScreenshot(null, device);
-    //    //return;
-    //};
-
-    //timeout callback
-    page.onResourceTimeout = function(e) {
-        console.log(domain + ' timeout for device ' + device.getDeviceName());
-        onDeviceScreenshot(null, device);
-    };
+    page.settings.resourceTimeout = 4000;
 
     //open page
     page.open('http://'+domain+'/', function(status) {
