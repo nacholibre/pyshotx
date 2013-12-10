@@ -39,11 +39,11 @@ function onDeviceScreenshot(status, device) {
 
     if (allDevicesDone() == true) {
         console.log('send for resizing');
-        page.close();
         page = require('webpage').create();
         page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
             resetDevices();
             readServerResponse();
+            page.close()
         });
     }
 }
@@ -69,7 +69,6 @@ function takeScreenshot(device) {
 
     device.setStatus('working');
 
-    page.close();
 
     page = require('webpage').create();
 
@@ -95,6 +94,7 @@ function takeScreenshot(device) {
             device.setScreenshot(screenPath);
         }
         onDeviceScreenshot(null, device);
+        page.close();
     });
 }
 
@@ -128,7 +128,6 @@ function readServerResponse() {
 
     domain = null;
 
-    page.close();
     page = require('webpage').create();
 
     page.settings.resourceTimeout = 10000;
@@ -143,6 +142,7 @@ function readServerResponse() {
             //http request to the server failed
             console.log('ERROR: Communication to the server failed');
             setTimeout(function () { readServerResponse() }, 2000);
+            page.close();
             return;
         } else {
             var serverResponse = page.evaluate(function () {
@@ -151,9 +151,11 @@ function readServerResponse() {
             if (serverResponse == 'empty') {
                 console.log('No domains left in the queue. Retry..');
                 setTimeout(function () { readServerResponse() }, 2000);
+                page.close();
                 return;
             } else {
                 domain = serverResponse;
+                page.close();
                 runDevicesScreenshots(domain);
             }
         }
