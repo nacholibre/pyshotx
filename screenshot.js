@@ -63,7 +63,7 @@ function takeScreenshot(device) {
         console.log('      waiting....');
         //wait until page is free
         //because we can't use async webpage in phantomjs
-        setTimeout(function () { takeScreenshot(device) }, 500);
+        setTimeout(function () { takeScreenshot(device) }, 1000);
         return;
     }
 
@@ -81,6 +81,18 @@ function takeScreenshot(device) {
     page.viewportSize = { width: device.getWidth(), height: device.getHeight() };
     page.settings.userAgent = device.getUserAgent()
     page.settings.resourceTimeout = 4000;
+
+    //hotfix, if requests fails more than one time, mark screenshot as done and
+    //move on, other wise it is stuck on forever waiting, example page:
+    //http://jangforum.com
+    var lastFailedUrl = null;
+    page.onResourceTimeout = function(request) {
+        console.log('Response (#' + request.id + '): ' + JSON.stringify(request));
+        if (lastFailedUrl == request.url) {
+            onDeviceScreenshot(null, device);
+        }
+        lastFailedUrl = request.url;
+    };
 
     //open page
     page.open('http://'+domain+'/', function(status) {
