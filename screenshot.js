@@ -39,8 +39,7 @@ function onDeviceScreenshot(status, device) {
 
     if (allDevicesDone() == true) {
         console.log('send for resizing');
-        page.close();
-        page = require('webpage').create();
+        recreatePage();
         page.open(serverUrl + 'resize?screenshots='+generateJSON()+'&domain='+domain, function() {
             resetDevices();
             readServerResponse();
@@ -58,6 +57,15 @@ function screenshotInProgress() {
     return false;
 }
 
+function recreatePage() {
+    try {
+        page.close()
+        page = require('webpage').create();
+    } catch (error) {
+        page = require('webpage').create();
+    }
+}
+
 function takeScreenshot(device) {
     if (screenshotInProgress() == true) {
         console.log('      waiting....');
@@ -69,9 +77,7 @@ function takeScreenshot(device) {
 
     device.setStatus('working');
 
-    page.close();
-
-    page = require('webpage').create();
+    recreatePage();
 
     //generate screenshot path
     var screenPath = screenshotsPath + domain + '_' + device.getDeviceName() + '.png';
@@ -140,8 +146,7 @@ function readServerResponse() {
 
     domain = null;
 
-    page.close();
-    page = require('webpage').create();
+    recreatePage();
 
     page.settings.resourceTimeout = 10000;
     page.onResourceTimeout = function(e) {
