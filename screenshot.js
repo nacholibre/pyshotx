@@ -144,6 +144,13 @@ function readServerResponse() {
         return;
     }
 
+    screenshotsCount += 1;
+
+    if (screenshotsCount >= 100) {
+        console.log('Count reached max...restart this process');
+        phantom.exit();
+    }
+
     domain = null;
 
     recreatePage();
@@ -240,6 +247,7 @@ function Device() {
     }
 }
 
+var screenshotsCount = 0;
 var domain = null;
 var page = require('webpage').create();
 var devices = new Array();
