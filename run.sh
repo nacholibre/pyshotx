@@ -8,7 +8,8 @@ runProcess () {
     debug=$1
     logNumber=$2
     echo 'starting new process'
-    if [[ -z "$debug" ]]; then
+    if $debug; then
+        echo 'DEBUG'
         phantomjs screenshot.js $screenshotsDirectory >& phantomjs_children_$logNumber.log &
     else
         phantomjs screenshot.js $screenshotsDirectory >& /dev/null &
