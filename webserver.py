@@ -121,6 +121,7 @@ def resizeDaemon(redisConnection, screenshotsQueueKey, resizeQueueKey,
         except Exception, err:
             print 'EXCEPTION, ERROR'
             print err
+            time.sleep(1)
             sys.stdout.flush()
 
 
