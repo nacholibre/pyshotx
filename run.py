@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import subprocess
 import time
-import os
 
 
 class PyshotX(object):
@@ -12,7 +11,7 @@ class PyshotX(object):
     childrens = {}
     childrenStarted = {}
 
-    def childrenProcesses(self, number):
+    def setChildrenProcesses(self, number):
         self.childs = number
 
     def setDirectory(self, directory):
@@ -54,11 +53,13 @@ class PyshotX(object):
 
     def checkProcesses(self):
         for processNumber, children in self.childrens.iteritems():
-            running = os.path.exists('/proc/%s' % children.pid)
-            if not running:
+            if children.poll() == 0:
+                print 'process not running...restart'
                 self.startChildren(processNumber)
             else:
-                if self.childrenStarted[processNumber] > 60*10:
+                started = time.time() - self.childrenStarted[processNumber]
+                if started > 60 * 10:
+                    print 'kill and run new process'
                     children.kill()
                     self.startChildren(processNumber)
 
@@ -66,10 +67,14 @@ class PyshotX(object):
         self.startWebServer()
         self.runChildrenProcesses()
         while True:
+            self.checkProcesses()
             time.sleep(5)
 
 
 if __name__ == '__main__':
     pyshotx = PyshotX()
+    #pyshotx.setUseLevels(True)
+    #pyshotx.setDirectory('/DATA1/screenshots/')
+    pyshotx.setChildrenProcesses(10)
 
     pyshotx.run()
