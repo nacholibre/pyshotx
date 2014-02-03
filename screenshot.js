@@ -146,7 +146,7 @@ function readServerResponse() {
 
     screenshotsCount += 1;
 
-    if (screenshotsCount >= 100) {
+    if (screenshotsCount >= 10) {
         console.log('Count reached max...restart this process');
         phantom.exit();
     }
