@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import subprocess
 import time
+import os
 
 
 class PyshotX(object):
@@ -8,6 +9,8 @@ class PyshotX(object):
     directory = 'screens/'
     levels = False
     childs = 1
+    childrens = {}
+    childrenStarted = {}
 
     def childrenProcesses(self, number):
         self.childs = number
@@ -35,15 +38,29 @@ class PyshotX(object):
         webserver = subprocess.Popen(['./webserver.py'], stdout=webserverLog)
         self.webserver = webserver
 
+    def startChildren(self, processNumber):
+        processLog = open('children_%s.log' % processNumber, 'w')
+        process = subprocess.Popen(['phantomjs',
+                                   'screenshot.js',
+                                   self.getDirectory()],
+                                   stdout=processLog)
+
+        self.childrenStarted[processNumber] = time.time()
+        self.childrens[processNumber] = process
+
     def runChildrenProcesses(self):
-        childrens = []
         for processNumber in xrange(0, self.getChildrenProcesses()):
-            processLog = open('children_%s.log' % processNumber, 'w')
-            process = subprocess.Popen(['phantomjs',
-                                       'screenshot.js',
-                                       self.getDirectory()],
-                                       stdout=processLog)
-            childrens.append(process)
+            self.startChildren(processNumber)
+
+    def checkProcesses(self):
+        for processNumber, children in self.childrens.iteritems():
+            running = os.path.exists('/proc/%s' % children.pid)
+            if not running:
+                self.startChildren(processNumber)
+            else:
+                if self.childrenStarted[processNumber] > 60*10:
+                    children.kill()
+                    self.startChildren(processNumber)
 
     def run(self):
         self.startWebServer()
