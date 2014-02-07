@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/root/screenshots/env/bin/python
 import subprocess
 import time
 
@@ -73,8 +73,8 @@ class PyshotX(object):
 
 if __name__ == '__main__':
     pyshotx = PyshotX()
-    #pyshotx.setUseLevels(True)
-    #pyshotx.setDirectory('/DATA1/screenshots/')
+    pyshotx.setUseLevels(True)
+    pyshotx.setDirectory('/DATA1/screenshots/')
     pyshotx.setChildrenProcesses(10)
 
     pyshotx.run()
