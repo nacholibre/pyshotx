@@ -60,7 +60,11 @@ class PyshotX(object):
                 started = time.time() - self.childrenStarted[processNumber]
                 if started > 60 * 10:
                     print 'kill and run new process'
-                    children.kill()
+                    try:
+                        children.kill()
+                    except OSError:
+                        print 'this process already died by itself'
+                        pass
                     self.startChildren(processNumber)
 
     def run(self):
