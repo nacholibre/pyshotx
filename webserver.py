@@ -190,7 +190,7 @@ if __name__ == '__main__':
     resizeQueueKey = 'resize_queue'
     secretWord = 'iamnacholibre'
 
-    redisConnection = redis.StrictRedis(host='localhost', port=6379, db=0)
+    redisConnection = redis.StrictRedis(host='localhost', port=6390, db=0)
 
     resizeProcess = multiprocessing.Process(target=resizeDaemon,
                                             args=(redisConnection,
